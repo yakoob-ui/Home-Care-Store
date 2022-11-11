@@ -1,8 +1,9 @@
 import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import data from './data.js';
+import serviceRouter from './routers/serviceRouter.js';
 import userRouter from './routers/userRouter.js';
+import orderRouter from './routers/orderRouter.js';
 
 dotenv.config();
 
@@ -10,28 +11,22 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log('connected to db');
-  })
-  .catch((err) => {
-    console.log(err.message);
-  });
-
-app.get('/api/services/:id', (req, res) => {
-  const service = data.services.find((x) => x._id === req.params.id);
-  if (service) {
-    res.send(service);
-  } else {
-    res.status(404).send({ message: 'Service Not Found' });
+mongoose.connect(
+  process.env.MONGODB_URL ||
+    'mongodb+srv://homecare:homecare1234@cluster0.oxzonco.mongodb.net/homeCareStore?retryWrites=true&w=majority',
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useCreateIndex: true,
   }
-});
+);
 
-app.get('/api/services', (req, res) => {
-  res.send(data.services);
-});
 app.use('/api/users', userRouter);
+app.use('/api/services', serviceRouter);
+app.use('/api/orders', orderRouter);
+app.get('/api/config/paypal', (req, res) => {
+  res.send(process.env.PAYPAL_CLIENT_ID || 'sb');
+});
 app.get('/', (req, res) => {
   res.send('Server is ready');
 });
