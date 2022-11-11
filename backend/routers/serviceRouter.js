@@ -79,4 +79,19 @@ serviceRouter.put(
   })
 );
 
+serviceRouter.delete(
+  '/:id',
+  isAuth,
+  isAdmin,
+  expressAsyncHandler(async (req, res) => {
+    const service = await Service.findById(req.params.id);
+    if (service) {
+      const deleteService = await service.remove();
+      res.send({ message: 'Service Deleted', service: deleteService });
+    } else {
+      res.status(404).send({ message: 'Service Not Found' });
+    }
+  })
+);
+
 export default serviceRouter;
